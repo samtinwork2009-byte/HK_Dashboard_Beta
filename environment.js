@@ -99,8 +99,17 @@ async function fetchAQHI() {
         elHome.innerHTML = `<div style="color:var(--text-faint)">暫無預報</div>`;
       }
       const currentAqhi = rows[0] ? riskLabel(rows[0].health_risk_max || rows[0].aqhi_max || '') : '--';
+      window._lastWeatherAQHI = currentAqhi;
       if (typeof updateSummaryWeather === 'function') {
-        updateSummaryWeather(window._lastWeatherTemp, currentAqhi, window._lastWeatherDesc, pubDate || '');
+        updateSummaryWeather(
+          window._lastWeatherTemp,
+          currentAqhi,
+          window._lastWeatherDesc,
+          pubDate || '',
+          window._lastWeatherHumidity,
+          window._lastWeatherUV,
+          window._lastWeatherCondition
+        );
       }
     }
 

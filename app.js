@@ -181,10 +181,9 @@ function initHomeWidgets() {
 function initSummaryCards() {
   updateSummaryTime();
   setInterval(updateSummaryTime, 1000);
-  initTrendChart();
-  bindSummaryControls();
   loadNewsSummary();
   renderTransportSummary('mtr');
+  bindSummaryControls();
 }
 
 function bindSummaryControls() {
@@ -195,32 +194,52 @@ function bindSummaryControls() {
       renderTransportSummary(this.dataset.view);
     });
   });
-  document.querySelectorAll('.seg-btn[data-range]').forEach(btn => {
-    btn.addEventListener('click', function() {
-      document.querySelectorAll('.seg-btn[data-range]').forEach(b => b.classList.remove('active'));
-      this.classList.add('active');
-      renderTrendChart(this.dataset.range);
-    });
-  });
 }
 
 function updateSummaryTime() {
   const now = new Date();
   const timeEl = document.getElementById('summary-time');
+  const dateEl = document.getElementById('summary-date');
   if (timeEl) {
     timeEl.textContent = now.toLocaleTimeString('zh-HK', { hour12: false });
   }
+  if (dateEl) {
+    dateEl.textContent = now.toLocaleDateString('zh-HK', {
+      weekday: 'short', month: 'long', day: 'numeric'
+    });
+  }
 }
 
-function updateSummaryWeather(currentTemp, aqhi, desc, updatedAt) {
+function getWeatherEmoji(desc) {
+  const text = (desc || '').toLowerCase();
+  if (text.includes('雷')) return '⛈️';
+  if (text.includes('雨')) return '🌧️';
+  if (text.includes('雪')) return '❄️';
+  if (text.includes('雲')) return '⛅';
+  if (text.includes('多雲')) return '⛅';
+  if (text.includes('晴')) return '☀️';
+  if (text.includes('霧') || text.includes('霧')) return '🌫️';
+  if (text.includes('風')) return '🌬️';
+  return '🌤️';
+}
+
+function updateSummaryWeather(currentTemp, aqhi, desc, updatedAt, humidity, uv, condition) {
   const tempEl = document.getElementById('summary-temp');
   const aqhiEl = document.getElementById('summary-aqhi');
   const descEl = document.getElementById('summary-weather-desc');
   const updatedEl = document.getElementById('summary-updated');
+  const humidityEl = document.getElementById('summary-humidity');
+  const uvEl = document.getElementById('summary-uv');
+  const conditionEl = document.getElementById('summary-condition');
+  const visualEl = document.getElementById('summary-weather-visual');
   if (tempEl) tempEl.textContent = currentTemp !== undefined ? `${currentTemp}°C` : '--°C';
   if (aqhiEl) aqhiEl.textContent = aqhi || '--';
   if (descEl) descEl.textContent = desc || '載入中...';
   if (updatedEl) updatedEl.textContent = updatedAt || '-- 分鐘前';
+  if (humidityEl) humidityEl.textContent = humidity || '--%';
+  if (uvEl) uvEl.textContent = uv || '--';
+  if (conditionEl) conditionEl.textContent = condition || desc || '載入中...';
+  if (visualEl) visualEl.textContent = getWeatherEmoji(condition || desc);
   if (currentTemp !== undefined) {
     saveHistoryRecord('weather', {
       timestamp: new Date().toISOString(),
@@ -228,57 +247,6 @@ function updateSummaryWeather(currentTemp, aqhi, desc, updatedAt) {
       aqhi: aqhi || null
     });
   }
-}
-
-function initTrendChart(range = 12) {
-  const ctx = document.getElementById('trend-chart');
-  if (!ctx || typeof Chart === 'undefined') return;
-  if (window._trendChart) window._trendChart.destroy();
-  window._trendChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: [],
-      datasets: [{
-        label: '氣溫 (°C)',
-        borderColor: '#60a5fa',
-        backgroundColor: 'rgba(96,165,250,0.2)',
-        tension: 0.35,
-        pointRadius: 2,
-        borderWidth: 2,
-        fill: true,
-        data: []
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: {
-        x: { grid: { display: false }, ticks: { color: 'var(--text-muted)' } },
-        y: { grid: { color: 'rgba(255,255,255,0.08)' }, ticks: { color: 'var(--text-muted)' } }
-      },
-      plugins: {
-        legend: { display: false },
-        tooltip: { backgroundColor: 'rgba(15,23,42,0.95)', titleColor: '#fff', bodyColor: '#fff' }
-      }
-    }
-  });
-  renderTrendChart(range);
-}
-
-async function renderTrendChart(range = 12) {
-  const chart = window._trendChart;
-  if (!chart) return;
-  const history = await queryHistory('weather', range);
-  if (!history.length) {
-    chart.data.labels = Array.from({ length: range }, (_, i) => `${i * -1}h`);
-    chart.data.datasets[0].data = Array.from({ length: range }, () => null);
-    chart.update();
-    return;
-  }
-  const sorted = history.sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp));
-  chart.data.labels = sorted.map(item => new Date(item.timestamp).toLocaleTimeString('zh-HK', { hour12:false, hour:'2-digit', minute:'2-digit' }));
-  chart.data.datasets[0].data = sorted.map(item => item.temperature ?? null);
-  chart.update();
 }
 
 function renderTransportSummary(view) {
@@ -347,8 +315,12 @@ async function saveHistoryRecord(type, payload) {
     const db = await openDb();
     const tx = db.transaction(DB_STORE, 'readwrite');
     const store = tx.objectStore(DB_STORE);
-    await store.add({ type, timestamp: new Date().toISOString(), payload });
-    return tx.complete;
+    store.add({ type, timestamp: new Date().toISOString(), payload });
+    return new Promise((resolve, reject) => {
+      tx.oncomplete = () => resolve(true);
+      tx.onerror = () => reject(tx.error);
+      tx.onabort = () => reject(tx.error || new Error('IndexedDB transaction aborted'));
+    });
   } catch (e) {
     console.error('IndexedDB save failed:', e);
   }

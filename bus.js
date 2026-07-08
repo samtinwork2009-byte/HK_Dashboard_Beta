@@ -174,12 +174,50 @@ const Bus = (function() {
     }
   }
 
+  async function renderSummary(targetId = 'summary-transport') {
+    const target = document.getElementById(targetId);
+    if (!target) return;
+    target.innerHTML = '<div class="skel skel-p"></div>';
+    try {
+      const items = await Promise.all(PRESET_STOPS.slice(0, 3).map(async (p) => {
+        let etas = [];
+        if (p.operator === 'KMB') {
+          const res = await fetch(`https://data.etabus.gov.hk/v1/transport/kmb/eta/${p.id}/${p.route}/${p.serviceType}`);
+          const data = await res.json();
+          etas = data.data || [];
+        } else {
+          const res = await fetch(`https://rt.data.gov.hk/v2/transport/citybus/eta/CTB/${p.id}/${p.route}`);
+          const data = await res.json();
+          etas = data.data || [];
+        }
+        const first = etas[0];
+        return {
+          label: p.label,
+          route: p.route,
+          eta: first ? fmtEta(first.eta, first.rmk_tc) : `<span style="color:var(--text-faint);font-size:12px">暫無班次</span>`
+        };
+      }));
+      target.innerHTML = items.map(item => `
+        <div class="row-item" style="justify-content:space-between;align-items:flex-start;gap:10px">
+          <div style="flex:1;min-width:0">
+            <div class="row-name" style="font-size:13px;font-weight:700">${item.route}</div>
+            <div style="font-size:11px;color:var(--text-faint);margin-top:4px">${item.label}</div>
+          </div>
+          <div>${item.eta}</div>
+        </div>
+      `).join('');
+    } catch (e) {
+      console.error('Bus summary error:', e);
+      target.innerHTML = `<div style="color:var(--error);font-size:13px">巴士摘要載入失敗</div>`;
+    }
+  }
+
   async function refresh() {
     renderPresetGrid();
     await Promise.allSettled(PRESET_STOPS.map((p, i) => loadPreset(p, i)));
   }
 
-  return { refresh };
+  return { refresh, renderSummary };
 })();
 
 /* ══ SEARCH MODULE ══════════════════════════════════════════ */

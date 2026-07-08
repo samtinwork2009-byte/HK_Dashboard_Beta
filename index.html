@@ -141,7 +141,6 @@
     <button onclick="document.getElementById('warning-banner').style.display='none'"
       style="color:white;opacity:.7;font-size:18px;line-height:1">✕</button>
   </div>
-  <style>@keyframes pulse-warn{0%,100%{opacity:1}50%{opacity:.85}} @keyframes pulse-warn-fast{0%,100%{opacity:1}50%{opacity:.6}}</style>
 
 
 
@@ -149,54 +148,55 @@
   <div id="page-home" class="page active">
     <main id="dashboard" class="dashboard-grid">
       <section class="summary-grid">
-        <div class="card summary-card">
+        <div class="card summary-hero-card" style="grid-column:span 2">
           <div class="card-head">
-            <div class="card-title">儀表板總覽</div>
+            <div>
+              <div class="card-title">儀表板總覽</div>
+              <div class="card-sub">即時氣象、交通與環境智慧概覽</div>
+            </div>
             <span class="card-badge badge-live">實時</span>
           </div>
-          <div class="summary-card-body">
-            <div class="summary-row">
-              <div class="summary-icon">⏰</div>
+          <div class="summary-hero-main">
+            <div class="summary-hero-top">
               <div>
                 <div class="summary-label">現在時間</div>
                 <div id="summary-time" class="summary-value">--:--:--</div>
+                <div id="summary-date" class="summary-note">----</div>
+              </div>
+              <div class="summary-hero-chip">
+                <span>最後更新</span>
+                <strong id="summary-updated">-- 分鐘前</strong>
               </div>
             </div>
-            <div class="summary-row">
-              <div class="summary-icon">🔄</div>
-              <div>
-                <div class="summary-label">最後更新</div>
-                <div id="summary-updated" class="summary-value">-- 分鐘前</div>
+            <div class="summary-hero-body">
+              <div class="summary-temp-panel">
+                <div id="summary-temp" class="summary-big-temp">--°C</div>
+                <div id="summary-weather-desc" class="summary-weather-condition">載入中...</div>
+              </div>
+              <div class="summary-weather-visual">☀️</div>
+            </div>
+            <div class="summary-metrics-grid">
+              <div class="summary-metric">
+                <div class="summary-metric-label">相對濕度</div>
+                <div id="summary-humidity" class="summary-metric-value">--%</div>
+              </div>
+              <div class="summary-metric">
+                <div class="summary-metric-label">紫外線</div>
+                <div id="summary-uv" class="summary-metric-value">--</div>
+              </div>
+              <div class="summary-metric">
+                <div class="summary-metric-label">空氣質素</div>
+                <div id="summary-aqhi" class="summary-metric-value">--</div>
+              </div>
+              <div class="summary-metric">
+                <div class="summary-metric-label">天氣狀態</div>
+                <div id="summary-condition" class="summary-metric-value">載入中...</div>
               </div>
             </div>
           </div>
         </div>
 
         <div class="card summary-card">
-          <div class="card-head">
-            <div class="card-title">氣象快照</div>
-            <span class="card-badge badge-source">HKO</span>
-          </div>
-          <div class="summary-card-body">
-            <div class="summary-row">
-              <div class="summary-icon">🌡️</div>
-              <div>
-                <div class="summary-label">溫度</div>
-                <div id="summary-temp" class="summary-value">--°C</div>
-              </div>
-            </div>
-            <div class="summary-row">
-              <div class="summary-icon">💨</div>
-              <div>
-                <div class="summary-label">空氣質素</div>
-                <div id="summary-aqhi" class="summary-value">--</div>
-              </div>
-            </div>
-            <div class="summary-note" id="summary-weather-desc">載入中...</div>
-          </div>
-        </div>
-
-        <div class="card summary-card" style="grid-column:span 2">
           <div class="card-head">
             <div class="card-title">交通摘要</div>
             <span class="card-badge badge-source">MTR / Bus</span>
@@ -208,27 +208,27 @@
           <div id="summary-transport" class="row-list" style="margin-top:var(--sp-3);"></div>
         </div>
 
-        <div class="card summary-card" style="grid-column:span 2">
+        <div class="card summary-card">
           <div class="card-head">
             <div class="card-title">最新新聞</div>
             <span class="card-badge badge-source">RSS / 整合</span>
           </div>
           <div class="marquee" id="summary-news">載入中...</div>
         </div>
-      </section>
 
-      <div class="card chart-card" style="grid-column:span 4">
-        <div class="card-head">
-          <div class="card-title">氣象趨勢</div>
-          <div class="card-sub">12/24/48 小時</div>
+        <div class="card summary-card summary-overview-card" style="grid-column:span 2">
+          <div class="card-head">
+            <div class="card-title">快速總覽</div>
+            <span class="card-badge badge-source">概括</span>
+          </div>
+          <div class="summary-overview-list">
+            <div class="row-item"><div class="row-name">即時天氣快照</div><span class="tag tag-blue">溫度 / 天氣 / AQHI</span></div>
+            <div class="row-item"><div class="row-name">交通趨勢</div><span class="tag tag-teal">港鐵、巴士即時更新</span></div>
+            <div class="row-item"><div class="row-name">環保觀察</div><span class="tag tag-green">空氣質素與海況</span></div>
+            <div class="row-item"><div class="row-name">健康提示</div><span class="tag tag-yellow">急症與醫療服務</span></div>
+          </div>
         </div>
-        <canvas id="trend-chart" height="180"></canvas>
-        <div class="chart-controls">
-          <button class="seg-btn active" data-range="12">12h</button>
-          <button class="seg-btn" data-range="24">24h</button>
-          <button class="seg-btn" data-range="48">48h</button>
-        </div>
-      </div>
+      </section>
 
       <div id="home-widgets" class="dash-grid home-widgets"></div>
       <div class="dash-grid">
@@ -1287,6 +1287,9 @@
       <a href="https://www.1823.gov.hk/" target="_blank" rel="noopener">1823 假期</a>
     </div>
     <div>每分鐘自動更新 · Auto-refresh every 60s</div>
+    <div style="font-size:0.85rem;color:var(--text-faint);margin-top:8px;line-height:1.5">
+      © 2026 Create By <strong>【 Sam.T 】</strong> · Copyright © 2026 Sam.T. All rights reserved. 版權所有© 2026 Sam.T.
+    </div>
   </div>
 </footer>
 
@@ -1306,7 +1309,6 @@
 <script src="js/map.js"></script>
 <script src="js/finance.js"></script>
 <script src="js/waste.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="js/app.js"></script>
 <script>
   // Register Service Worker (PWA)

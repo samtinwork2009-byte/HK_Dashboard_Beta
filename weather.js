@@ -98,9 +98,20 @@ function renderCurrentWeather(d) {
 
   window._lastWeatherUpdate = upd ? new Date(upd).toISOString() : new Date().toISOString();
   window._lastWeatherTemp = main.value ?? '--';
-  window._lastWeatherDesc = desc;
+  window._lastWeatherHumidity = hum !== '--' ? hum + '%' : '--';
+  window._lastWeatherUV = uvVal !== '--' ? uvVal : '--';
+  window._lastWeatherCondition = desc;
+  window._lastWeatherAQHI = window._lastWeatherAQHI || '--';
   if (typeof updateSummaryWeather === 'function') {
-    updateSummaryWeather(main.value ?? '--', '--', desc, upd ? relativeTime(upd) : '');
+    updateSummaryWeather(
+      main.value ?? '--',
+      window._lastWeatherAQHI || '--',
+      desc,
+      upd ? relativeTime(upd) : '',
+      window._lastWeatherHumidity,
+      window._lastWeatherUV,
+      desc
+    );
   }
 
   // Warnings
